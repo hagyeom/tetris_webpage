@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tetris Game</title>
+
+    <style>
+
+        /* Consistent Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        canvas {
+
+            border: 1px solid #000;
+
+        }
+
+        .info-section {
+            padding: 20px;
+            background-color: #f9f9f9;
+            text-align: left;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        /* 헤딩 스타일 */
+        .info-section h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* 파라그래프 스타일 */
+        .info-section p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        /* 강한 강조(예: 제목) */
+        .info-section strong {
+            color: #ff6347;
+        }
+
+        /* 리스트 스타일 */
+        .info-section ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        .info-section ul li {
+            margin-bottom: 8px;
+        }
+
+        /* 텍스트 강조 */
+        .info-section em {
+            font-style: italic;
+            color: #555;
+        }
+
+        /* 게임 컨테이너의 새로운 스타일 */
+        .game-container {
+            text-align: center; /* 콘텐츠를 중앙에 가로로 정렬. */
+            margin-top: 20px; /* 설명과 게임 사이에 공백을 추가 */
+        }
+
+        /* 게임 컨테이너 내에서 캔버스 스타일 지정 */
+        .game-container canvas {
+            border: 1px solid #000;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .game-container canvas:hover {
+            transform: scale(1.05);
+        }
+
+        /* Color Themes */
+        .dark-theme {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .dark-theme .info-section,
+        .dark-theme .modal-content {
+            background-color: #444;
+            color: #fff;
+            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-theme a {
+            color: #6ccfff;
+        }
+
+        .dark-theme a:hover {
+            text-decoration: underline;
+            color: #8cf;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+
+        .left-column,
+        .right-column {
+            flex-basis: calc(50% - 40px);
+            margin: 10px;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .left-column,
+            .right-column {
+                flex-basis: 100%;
+            }
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        ul {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        li {
+            font-size: 14px;
+            color: #666;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.9);
+        }
+
+        .modal-content {
+            margin: auto;
+            display: block;
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        .close {
+            color: white;
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 35px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #bbb;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="left-column">
+            <!-- 테트리스 설명 부분 -->
+            <h2>테트리스란?</h2>
+            <p>테트리스는 러시아의 프로그래머 알렉세이 파지노프가 개발한 퍼즐 게임입니다.</p>
+            <p>1984년 6월 6일에 처음 출시되었으며, 현재까지도 전 세계적으로 가장 인기 있는 비디오 게임 중 하나입니다.</p>
+            <p>테트리스는 화면 아래에서 위로 떨어지는 블록을 조작하여 가로 세로 네 칸으로 이루어진 줄을 완성하는 게임입니다.</p>
+            <p>블록은 총 7가지 모양으로 이루어져 있으며, 각 모양은 4개의 블록으로 구성되어 있습니다.</p>
+            <p>플레이어는 방향키를 사용하여 블록을 이동시키고, 스페이스바를 사용하여 블록을 떨어뜨릴 수 있습니다.</p>
+            <p>블록을 떨어뜨릴 때는 블록이 화면 가장 아래에 도달할 때까지 떨어집니다.</p>
+            <p>줄을 완성하면 줄이 사라집니다.</p>
+            <p>줄을 완성할 때마다 점수가 쌓이게 되며, 점수가 높을수록 더 많은 블록이 떨어집니다.</p>
+            <p>줄을 완성하지 못하고 블록이 화면 맨 위까지 쌓이면 게임이 종료됩니다.</p>
+            <p>테트리스는 간단한 규칙이지만, 숙련되기 위해서는 상당한 실력이 필요합니다.</p>
+            <p>테트리스는 집중력과 순발력을 요구하는 게임으로, 전 세계적으로 많은 팬을 보유하고 있습니다.</p>
+            <p>테트리스는 다양한 버전으로 출시되어 있습니다.</p>
+            <p>PC, 모바일, 콘솔 등 다양한 플랫폼에서 즐길 수 있으며, 온라인 대전도 가능합니다.</p>
+            <p>테트리스는 교육용으로도 활용되고 있으며, 테트리스를 통해 집중력과 순발력을 향상시킬 수 있습니다.</p>
+            <p>더 많은 정보는 <a href="https://ko.wikipedia.org/wiki/%ED%85%8C%ED%8A%B8%EB%A6%AC%EC%8A%A4" target="_blank">위키백과</a>에서 확인할 수 있습니다.</p>
+        </div>
+        <div class="right-column">
+            <!-- 테트리스와 비슷한 게임 소개 부분 -->
+            <h2>테트리스와 비슷한 다른 게임</h2>
+            <p>테트리스와 비슷한 두뇌 게임들은 다양한 전략과 집중력을 필요로 합니다. 이러한 게임들은...</p>
+            <p>플레이어의 논리적 사고와 반응속도를 향상시키며, 시각적인 패턴을 파악하고...</p>
+            <p>전략을 짜며 블록을 배치하는 능력을 촉진합니다. 테트리스 외에도...</p>
+            <p>낙하형 퍼즐 게임이나 같은 모양의 블록을 세 개 이상 맞추어 터뜨리는 게임들로는...</p>
+            <ul>
+                <li><a href="#" onclick="showModal('Columns')">컬럼스 (Columns)</a></li>
+                <li><a href="#" onclick="showModal('PuyoPuyo')">뿌요뿌요 (Puyo Puyo)</a></li>
+                <li><a href="#" onclick="showModal('Snake')">스네이크 (Snake)</a></li>
+                <li><a href="#" onclick="showModal('2048')">2048</a></li>
+            </ul>
+        </div>
+
+        <!-- 모달 팝업 -->
+        <div class="modal" id="gameModal">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img class="modal-content" id="gameImage">
+        </div>
+
+        <div class="info-section">
+            <h1>Welcome to Tetris!</h1>
+            <p>테트리스는 테트로미노라고 알려진 다양한 모양이 게임 영역 아래로 떨어지는 고전적인 퍼즐 게임입니다.</p>
+            <p><strong>게임 방법:</strong></p>
+            <ul>
+                <li>화살표 키를 사용하여 테트로미노를 왼쪽, 오른쪽, 아래로 이동합니다.</li>
+                <li>테트로미노를 회전하려면 위쪽 화살표 키를 누르세요.</li>
+                <li>스페이스바를 눌러 게임을 일시 중지하세요.</li>
+                <li>한 줄을 채워서 점수를 얻고 레벨을 올리세요!</li>
+            </ul>
+            <p><strong>점수:</strong></p>
+            <ul>
+                <li>1라인 클리어: 100포인트</li>
+                <li>2줄 클리어: 200포인트</li>
+                <li>3줄 클리어: 300포인트</li>
+                <li>4라인 클리어: 1200점</li>
+                <li>5라인 클리어: 2400점</li>
+            </ul>
+            <p><em>Enter를 눌러 게임을 시작하세요.</em></p>
+            <div class="game-container">
+                <canvas id="canvas" width="200" height="400"></canvas>
+            </div>
+
+            <script>
+
+                function showModal(game) {
+                    var modal = document.getElementById("gameModal");
+                    var modalImg = document.getElementById("gameImage");
+
+        // 각 게임에 따른 이미지 설정
+                    if (game === 'Columns') {
+            modalImg.src = 'https://i.namu.wiki/i/jQgiJaRGGS45FBRrTbg-_2gfwotPDUksR4oYHT4Ihaa6uLz96EYjuQ4hiEAuFiOkA5CzotzfOv0qOt7VGGfmjw.png'; // Columns 게임 이미지 URL
+        } else if (game === 'PuyoPuyo') {
+            modalImg.src = 'https://i.namu.wiki/i/dMEHFxs809__cMqHsZDdafbJ7ZY1xZcc3TvMHIlXxob-ouDpG4upVo1BSx41c2uyamvaSlYieVzskXta_lkErA.webp'; // Puyo Puyo 게임 이미지 URL
+        } else if (game === 'Snake') {
+            modalImg.src = 'https://blog.kakaocdn.net/dn/dbXk6h/btrgB5F4uK5/ahZbSISLvk8AKxw1NUSuek/img.png'; // Snake 게임 이미지 URL
+        } else if (game === '2048') {
+            modalImg.src = 'https://i.namu.wiki/i/cRxzf5UNKClurkD8ux13JlcbJtF_Jc8sx6oq5jRc8UlzaVe8p5aq2C_IBih8VfNY0iWb2zV0NmVH-BCcTQk2qw.webp'; // 2048 게임 이미지 URL
+        }
+        
+        modal.style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("gameModal").style.display = "none";
+    }
+
+    const canvas = document.getElementById("canvas");
+
+    const context = canvas.getContext("2d");
+
+    const blockSize = 20;
+
+    const numRows = 20;
+
+    const numCols = 10;
+
+    const screen = new Array(numRows).fill(0).map(() => new Array(numCols).fill(0));
+
+            let gameStarted = false; // 게임 시작 여부를 확인하는 새 변수
+
+            let paused = false; // 게임 일시 정지 여부를 확인하는 변수
+            const tetrominoes = [
+
+                { shape: [[1, 1, 1, 1]], color: "red" },
+
+                { shape: [[1, 1, 1], [1, 0, 0]], color: "orange" },
+
+                { shape: [[1, 1, 1], [0, 0, 1]], color: "yellow" },
+
+                { shape: [[1, 1, 1], [0, 1, 0]], color: "green" },
+
+                { shape: [[1, 1], [1, 1]], color: "blue" },
+
+                { shape: [[1, 1, 0], [0, 1, 1]], color: "indigo" },
+
+                { shape: [[0, 1, 1], [1, 1, 0]], color: "purple" },
+
+                ];
+
+
+
+            let tetromino = getRandomTetromino();
+
+
+
+            function drawBlock(x, y, color) {
+
+                context.fillStyle = color;
+
+                context.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+                context.strokeStyle = "black";
+
+                context.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
+
+            }
+
+
+
+            function draw() {
+
+                context.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 캔버스 위에 점수 표시
+                context.fillStyle = "black";
+                context.font = "16px Arial";
+                context.fillText(`Score: ${score}`, 10, 30); // 필요에 따라 위치 조정
+                context.fillText(`Level: ${level}`, 10, 50); // 필요에 따라 위치 조정
+
+                // 화면에 채워진 블록 그리기
+
+                for (let y = 0; y < numRows; y++) {
+
+                    for (let x = 0; x < numCols; x++) {
+
+                        if (screen[y][x] !== 0) {
+
+                            drawBlock(x, y, "gray");
+
+                        }
+
+                    }
+
+                }
+
+
+
+                if (!gameStarted) {
+
+                    // 초기화면 메시지
+
+                    context.fillStyle = "black";
+
+                    context.font = "14px Arial";
+
+                    const message = paused ? "Game Paused - Press Space to Resume" : "Press Enter to start the game";
+
+                    const textWidth = context.measureText(message).width;
+
+                    context.fillText(message, (canvas.width - textWidth) / 2, canvas.height / 2);
+
+                } else {
+
+                    // 테트로미노 그리기
+
+                    tetromino.shape.forEach((row, y) => {
+
+                        row.forEach((value, x) => {
+
+                            if (value !== 0) {
+
+                                drawBlock(tetromino.x + x, tetromino.y + y, tetromino.color);
+
+                            }
+
+                        });
+
+                    });
+
+                }
+
+
+
+                // 일시중지/재시작 메시지
+
+                if (paused && gameStarted) {
+
+                    context.fillStyle = "black";
+
+                    context.font = "10px Arial"; 
+
+                    const pauseMessage = "Game Paused - Press Space to Resume";
+
+                    const pauseTextWidth = context.measureText(pauseMessage).width;
+
+                    context.fillText(pauseMessage, (canvas.width - pauseTextWidth) / 2, canvas.height - 10);
+
+                }
+
+            }
+
+
+
+            function moveDown() {
+
+                tetromino.y++;
+
+                if (checkCollision()) {
+
+                    tetromino.y--;
+
+                    placeTetromino();
+
+                    clearLines();
+
+                    if (isGameOver()) {
+
+                        endGame();
+
+                    } else {
+
+                        spawnTetromino();
+
+                    }
+
+                }
+
+            }
+
+
+
+            function moveLeft() {
+
+                tetromino.x--;
+
+                if (checkCollision()) {
+
+                    tetromino.x++;
+
+                }
+
+            }
+
+
+
+            function moveRight() {
+
+                tetromino.x++;
+
+                if (checkCollision()) {
+
+                    tetromino.x--;
+
+                }
+
+            }
+
+
+
+            function rotate() {
+
+                const originalShape = tetromino.shape;
+
+                tetromino.shape = rotateMatrix(tetromino.shape);
+
+                if (checkCollision()) {
+
+                    tetromino.shape = originalShape;
+
+                }
+
+            }
+
+
+
+            function getRandomTetromino() {
+
+                const randomIndex = Math.floor(Math.random() * tetrominoes.length);
+
+                return {
+
+                    shape: tetrominoes[randomIndex].shape,
+
+                    color: tetrominoes[randomIndex].color,
+
+                    x: Math.floor((numCols - tetrominoes[randomIndex].shape[0].length) / 2),
+
+                    y: 0,
+
+                };
+
+            }
+
+
+
+            function rotateMatrix(matrix) {
+
+                const rows = matrix.length;
+
+                const cols = matrix[0].length;
+
+                const result = new Array(cols).fill(0).map(() => new Array(rows).fill(0));
+
+
+
+                for (let i = 0; i < rows; i++) {
+
+                    for (let j = 0; j < cols; j++) {
+
+                        result[j][rows - 1 - i] = matrix[i][j];
+
+                    }
+
+                }
+
+
+
+                return result;
+
+            }
+
+
+
+            function checkCollision() {
+
+                for (let y = 0; y < tetromino.shape.length; y++) {
+
+                    for (let x = 0; x < tetromino.shape[y].length; x++) {
+
+                        if (
+
+                            tetromino.shape[y][x] !== 0 &&
+
+                            (screen[tetromino.y + y] && screen[tetromino.y + y][tetromino.x + x]) !== 0
+
+                            ) {
+
+                            return true;
+
+                    }
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+
+
+        function placeTetromino() {
+
+            tetromino.shape.forEach((row, y) => {
+
+                row.forEach((value, x) => {
+
+                    if (value !== 0) {
+
+                        screen[tetromino.y + y][tetromino.x + x] = 1;
+
+                    }
+
+                });
+
+            });
+
+        }
+
+
+
+        function clearLines() {
+
+            for (let y = numRows - 1; y >= 0; y--) {
+
+                if (screen[y].every((value) => value !== 0)) {
+
+                        // 라인 제거
+
+                    screen.splice(y, 1);
+
+                    screen.unshift(new Array(numCols).fill(0));
+
+                }
+
+            }
+
+        }
+
+
+
+        function spawnTetromino() {
+
+            tetromino = getRandomTetromino();
+
+        }
+
+
+
+        function isGameOver() {
+
+                // 맨 윗줄에 채워진 블록이 있는지 확인
+
+            return screen[0].some((value) => value !== 0);
+
+        }
+
+
+
+
+
+
+
+
+        function endGame() {
+
+                // 게임이 끝나면 작업을 수행
+
+            gameStarted = false;
+
+            paused = false;
+
+            alert("Game Over! Press Enter to restart.");
+
+            resetGame();
+
+        }
+
+
+
+        function resetGame() {
+
+                // 게임 상태 재설정
+
+            screen.forEach((row) => row.fill(0));
+
+        }
+
+
+
+        function togglePause() {
+
+            paused = !paused;
+
+        }
+
+
+
+        function update() {
+
+            if (gameStarted && !paused) {
+
+                moveDown();
+
+            }
+
+            draw();
+
+        }
+
+        let score = 0;
+        let level = 1;
+
+        function clearLines() {
+            let linesCleared = 0;
+
+            for (let y = numRows - 1; y >= 0; y--) {
+                if (screen[y].every((value) => value !== 0)) {
+            // 라인 제거
+                    screen.splice(y, 1);
+                    screen.unshift(new Array(numCols).fill(0));
+                    linesCleared++;
+                }
+            }
+
+            function placeTetromino() {
+                tetromino.shape.forEach((row, y) => {
+                    row.forEach((value, x) => {
+                        if (value !== 0) {
+                            screen[tetromino.y + y][tetromino.x + x] = 1;
+                        }
+                    });
+                });
+
+            // 블록 낙하 높이를 기준으로 점수 계산
+                score += (numRows - tetromino.y) * 10;
+            }
+
+            // 지워진 라인을 기준으로 점수를 계산
+            if (linesCleared > 0) {
+                switch (linesCleared) {
+                case 1:
+                    score += 100 * level;
+                    break;
+                case 2:
+                    score += 200 * level;
+                    break;
+                case 3:
+                    score += 300 * level;
+                    break;
+                case 4:
+                    score += 1200 * level;
+                    break;
+                case 5:
+                    score += 2400 * level;
+                    break;
+                default:
+                    break;
+                }
+
+        // 점수에 따른 레벨업
+                level = Math.floor(score / 1000) + 1;
+            }
+        }
+
+
+
+            // 키보드 입력 처리
+
+        document.addEventListener("keydown", (event) => {
+
+            if (!gameStarted && event.code === "Enter") {
+
+                    // Enter 키를 누르면 게임 시작 또는 재시작
+
+                gameStarted = true;
+
+                    paused = false; // 시작할 때 게임이 일시 중지되지 않았는지 확인
+
+                } else if (gameStarted && !paused) {
+
+                    // 게임이 실행 중이며 일시 정지되지 않은 상태에서 키 처리
+
+                    switch (event.code) {
+
+                    case "ArrowLeft":
+
+                        moveLeft();
+                        draw();
+                        break;
+
+                    case "ArrowRight":
+
+                        moveRight();
+                        draw();
+                        break;
+
+                    case "ArrowDown":
+                event.preventDefault(); // 기본 스크롤 동작 중단
+                moveDown();
+                draw();
+                break;
+
+            case "ArrowUp":
+
+                event.preventDefault(); // 위쪽 방향키 입력에 대한 기본 스크롤 동작 중단
+                rotate();
+                draw();
+                break;
+
+            case "Space":
+
+                            togglePause(); // 스페이스바를 누르면 게임을 일시 중지하거나 다시 시작
+
+                            break;
+
+                        }
+
+                    } else if (gameStarted && paused) {
+        // 게임이 실행 중이며 일시 정지된 상태에서 스페이스바를 눌렀을 때
+                        if (event.code === "Space") {
+            togglePause(); // 스페이스바를 눌러 다시 재개
+        }
+    } else {
+        // 게임이 중단된 경우에는 해당 키 입력에 대한 기본 동작 허용하지 않도록 처리
+        if (event.code === "ArrowDown" || event.code === "ArrowUp" || event.code === "Space") {
+            event.preventDefault();
+            return; // 아무런 처리 없이 그냥 리턴
+        }
+    }
+
+});
+
+            // 게임 반복
+
+        setInterval(update, 500);
+
+    </script>
+
+</body>
+
+</html>
